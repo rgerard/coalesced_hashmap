@@ -16,16 +16,18 @@ class CoalescedHashMapTest : public CppUnit::TestFixture  {
 	CPPUNIT_TEST( testOverwrite );
 	CPPUNIT_TEST( testMany );
 	CPPUNIT_TEST( testCollision );
+	CPPUNIT_TEST( testNullChar );
+	CPPUNIT_TEST( testOverflow );
 	
 	CPPUNIT_TEST_SUITE_END();
 	
 private:
-  CharacterMap* map;
+	CharacterMap* map;
 
-  void assertValue(char key, long expectedValue) {
-  	std::ostringstream os;
-		os << "Value for '" << key << "' should be " << expectedValue;
-		std::string message(os.str());
+	void assertValue(char key, long expectedValue) {
+		std::ostringstream os;
+			os << "Value for '" << key << "' should be " << expectedValue;
+			std::string message(os.str());
 
   	long result;
 
@@ -55,6 +57,9 @@ public:
 
 		CPPUNIT_ASSERT(map->put('a', 200));
 		assertValue('a', 200);
+
+		CPPUNIT_ASSERT(map->put('a', 0));
+		assertValue('a', 0);
 	}
 
 	void testMany() {
@@ -79,7 +84,18 @@ public:
 		for (int i = 0; i < 5; i++) {
 			assertValue('a' + increment * i, i * 100);
 		}
+	}
 
+	void testNullChar() {
+		CPPUNIT_ASSERT(map->put(0, 1000));
+		assertValue(0, 1000);
+	}
+
+	void testOverflow() {
+		for (int i = 0; i < 10; i++) {
+			CPPUNIT_ASSERT(map->put('a' + i, 100));
+		}
+		CPPUNIT_ASSERT(!map->put('z', 100));
 	}
 };
 
