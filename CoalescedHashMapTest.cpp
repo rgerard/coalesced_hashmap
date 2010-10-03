@@ -18,6 +18,7 @@ class CoalescedHashMapTest : public CppUnit::TestFixture  {
 	CPPUNIT_TEST( testCollision );
 	CPPUNIT_TEST( testNullChar );
 	CPPUNIT_TEST( testOverflow );
+	CPPUNIT_TEST( testAllCharacters );
 	
 	CPPUNIT_TEST_SUITE_END();
 	
@@ -102,6 +103,26 @@ public:
 			assertValue('a' + i, i);
 		}
 		assertValue('z', 100);
+	}
+
+	void testAllCharacters() {
+		for (int i = 0; i < 255; i++) {
+			CPPUNIT_ASSERT(map->put(i, i + 100));
+		}
+
+		for (int i = 0; i < 255; i++) {
+			assertValue(i, i + 100);
+		}
+
+		CPPUNIT_ASSERT_EQUAL(256, map->getSize());
+
+		for (int i = 0; i < 255; i++) {
+			CPPUNIT_ASSERT(map->put(i, i + 200));
+		}
+
+		for (int i = 0; i < 255; i++) {
+			assertValue(i, i + 200);
+		}
 	}
 };
 

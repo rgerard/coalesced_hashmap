@@ -1,6 +1,7 @@
 // This is the main DLL file.
 
 #include "CoalescedHashMap.h"
+#include <algorithm>
 #include <sstream>
 
 
@@ -44,7 +45,7 @@ bool CharacterMap::put(char key, long value) {
 
 	if ( cursor == -1 ) {
 		// Table is full: re-size and try again.
-		resize(m_actualsize * 2);
+		resize(std::max(m_actualsize * 2, 256));
 		return put(key, value);
     }
 
