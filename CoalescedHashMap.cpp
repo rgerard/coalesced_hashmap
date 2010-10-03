@@ -5,6 +5,11 @@
 
 
 CharacterMap::CharacterMap(int size) {
+	init(size);
+}
+
+
+void CharacterMap::init(int size) {
 	m_bucket = new Bucket[size];
 
 	m_actualsize = size;
@@ -34,12 +39,13 @@ bool CharacterMap::put(char key, long value) {
 	// Find the right location in the cellar for this new value, starting at (tablesize - 1)
 	int cursor = m_actualsize - 1;
 	while ( cursor >= 0 && m_bucket[cursor].used && m_bucket[cursor].key != key) {
-      --cursor;
-     }
+		--cursor;
+    }
 
-	// Table is full, so return failure
 	if ( cursor == -1 ) {
-      return false;
+		// Table is full: re-size and try again.
+		resize(m_actualsize * 2);
+		return put(key, value);
     }
 
 	// Insert new bucket at the cursor location
@@ -49,7 +55,7 @@ bool CharacterMap::put(char key, long value) {
 
 	// Point the colliding node to this new node
 	while ( m_bucket[index].indexOfNext != -1 ) {
-      index = m_bucket[index].indexOfNext;
+		index = m_bucket[index].indexOfNext;
     }
 
     m_bucket[index].indexOfNext = cursor;
@@ -65,7 +71,7 @@ bool CharacterMap::get(char key, long &result) {
 	}
 
 	while (index != -1 && m_bucket[index].key != key) {
-	  index = m_bucket[index].indexOfNext;
+		index = m_bucket[index].indexOfNext;
 	}
 
 	if (index == -1) {
@@ -100,4 +106,24 @@ std::string CharacterMap::toDebugString() {
 
 	std::string message(os.str());
 	return message;
+}
+
+void CharacterMap::resize(int newSize) {
+	int oldSize = m_actualsize;
+	Bucket *oldItems = m_bucket;
+
+	init(newSize);
+
+	for (int i = 0; i < oldSize; i++) {
+		Bucket item = oldItems[i];
+		if (item.used) {
+			put(item.key, item.value);
+		}
+	}
+
+	delete [] oldItems;
+}
+
+int CharacterMap::getSize() {
+	return m_actualsize;
 }

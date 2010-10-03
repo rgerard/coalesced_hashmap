@@ -93,9 +93,15 @@ public:
 
 	void testOverflow() {
 		for (int i = 0; i < 10; i++) {
-			CPPUNIT_ASSERT(map->put('a' + i, 100));
+			CPPUNIT_ASSERT(map->put('a' + i, i));
 		}
-		CPPUNIT_ASSERT(!map->put('z', 100));
+		CPPUNIT_ASSERT(map->put('z', 100));
+		CPPUNIT_ASSERT(map->getSize() >= 11);
+
+		for (int i = 0; i < 10; i++) {
+			assertValue('a' + i, i);
+		}
+		assertValue('z', 100);
 	}
 };
 
