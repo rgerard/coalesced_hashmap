@@ -1,13 +1,14 @@
 CC=g++
+
 CFLAGS=-Wall
+
 LIBS=-lcppunit
 
-lib: CoalescedHashMap.o
+test-runner: CoalescedHashMap.o CoalescedHashMapTest.o TestRunner.o
+	$(CC) $(CFLAGS) $(LIBS) *.o -o test-runner
 
-test-lib: lib CoalescedHashMapTest.o TestRunner.o
-
-test: test-lib
-	$(CC) $(CFLAGS) $(LIBS) *.o -o test
+test: test-runner
+	./test-runner
 
 clean:
-	rm -f main main.o hello_fn.o
+	rm -f test *.o
