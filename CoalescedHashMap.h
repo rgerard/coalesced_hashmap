@@ -9,8 +9,8 @@ static const float m_percentrestrict = 0.86;
 struct Bucket {
 	bool used;
 	char key;
+	short indexOfNext;
 	long value;
-	int indexOfNext;
 };
 
 class CharacterMap {
