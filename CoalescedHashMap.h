@@ -10,12 +10,12 @@ struct Bucket {
 
 class CharacterMap {
 private:
-       ~CharacterMap();
 	   int hash(char key);
 	   Bucket *bucket;
 	   int m_size;
 public:
        CharacterMap(int size);
+       ~CharacterMap();       
        bool contains(char key);
 	   bool contains(char key, int index);
        bool put(char key, long value);
