@@ -48,26 +48,26 @@ public:
 	
 	void testBasic() {
 		CPPUNIT_ASSERT(!map->contains('a'));
-		CPPUNIT_ASSERT(map->put('a', 100));
+		map->put('a', 100);
 		assertValue('a', 100);
 	}
 
 	void testOverwrite() {
-		CPPUNIT_ASSERT(map->put('a', 100));
+		map->put('a', 100);
 		assertValue('a', 100);
 
-		CPPUNIT_ASSERT(map->put('a', 200));
+		map->put('a', 200);
 		assertValue('a', 200);
 
-		CPPUNIT_ASSERT(map->put('a', 0));
+		map->put('a', 0);
 		assertValue('a', 0);
 	}
 
 	void testMany() {
-		CPPUNIT_ASSERT(map->put('a', 100));
-		CPPUNIT_ASSERT(map->put('b', 200));
-		CPPUNIT_ASSERT(map->put('c', 300));
-		CPPUNIT_ASSERT(map->put('d', 400));
+		map->put('a', 100);
+		map->put('b', 200);
+		map->put('c', 300);
+		map->put('d', 400);
 
 		assertValue('a', 100);
 		assertValue('b', 200);
@@ -79,7 +79,7 @@ public:
 		int increment = 10 * m_percentrestrict;
 
 		for (int i = 0; i < 5; i++) {
-			CPPUNIT_ASSERT(map->put('a' + increment * i, i * 100));
+			map->put('a' + increment * i, i * 100);
 		}
 
 		for (int i = 0; i < 5; i++) {
@@ -88,15 +88,15 @@ public:
 	}
 
 	void testNullChar() {
-		CPPUNIT_ASSERT(map->put(0, 1000));
+		map->put(0, 1000);
 		assertValue(0, 1000);
 	}
 
 	void testOverflow() {
 		for (int i = 0; i < 10; i++) {
-			CPPUNIT_ASSERT(map->put('a' + i, i));
+			map->put('a' + i, i);
 		}
-		CPPUNIT_ASSERT(map->put('z', 100));
+		map->put('z', 100);
 		CPPUNIT_ASSERT(map->getSize() >= 11);
 
 		for (int i = 0; i < 10; i++) {
@@ -107,7 +107,7 @@ public:
 
 	void testAllCharacters() {
 		for (int i = 0; i < 255; i++) {
-			CPPUNIT_ASSERT(map->put(i, i + 100));
+			map->put(i, i + 100);
 		}
 
 		for (int i = 0; i < 255; i++) {
@@ -117,7 +117,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(256, map->getSize());
 
 		for (int i = 0; i < 255; i++) {
-			CPPUNIT_ASSERT(map->put(i, i + 200));
+			map->put(i, i + 200);
 		}
 
 		for (int i = 0; i < 255; i++) {

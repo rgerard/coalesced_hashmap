@@ -28,7 +28,7 @@ public:
     ~CharacterMap();
 
 	bool contains(char key);
-    bool put(char key, long value);
+    void put(char key, long value);
     bool get(char key, long &result);
     std::string toDebugString();
     int getSize();

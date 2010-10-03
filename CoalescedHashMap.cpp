@@ -26,7 +26,7 @@ CharacterMap::~CharacterMap() {
 	delete [] m_bucket;
 }
  
-bool CharacterMap::put(char key, long value) {
+void CharacterMap::put(char key, long value) {
 	int index = hash(key);
 	
 	// If the location is null, insert a new bucket to hashmap
@@ -34,7 +34,7 @@ bool CharacterMap::put(char key, long value) {
 		m_bucket[index].key = key;
 		m_bucket[index].value = value;
 		m_bucket[index].used = true;
-		return true;
+		return;
 	}
 
 	// Find the right location in the cellar for this new value, starting at (tablesize - 1)
@@ -46,7 +46,8 @@ bool CharacterMap::put(char key, long value) {
 	if ( cursor == -1 ) {
 		// Table is full: re-size and try again.
 		resize(std::max(m_actualsize * 2, 256));
-		return put(key, value);
+		put(key, value);
+		return;
     }
 
 	// Insert new bucket at the cursor location
@@ -60,8 +61,6 @@ bool CharacterMap::put(char key, long value) {
     }
 
     m_bucket[index].indexOfNext = cursor;
-
-	return true;
 }
 
 bool CharacterMap::get(char key, long &result) {
