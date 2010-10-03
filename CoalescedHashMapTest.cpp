@@ -46,8 +46,6 @@ public:
 	}
 
 	void testOverwrite() {
-		long result;
-
 		map->put('a', 100);
 		assertValue('a', 100);
 
@@ -56,8 +54,6 @@ public:
 	}
 
 	void testMany() {
-		long result;
-
 		map->put('a', 100);
 		map->put('b', 200);
 		map->put('c', 300);
