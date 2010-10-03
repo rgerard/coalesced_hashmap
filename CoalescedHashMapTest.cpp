@@ -4,6 +4,8 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <iostream>
+#include <string>
 #include "CoalescedHashMap.h"
 
 class CoalescedHashMapTest : public CppUnit::TestFixture  {
@@ -13,6 +15,7 @@ class CoalescedHashMapTest : public CppUnit::TestFixture  {
 	CPPUNIT_TEST( testBasic );
 	CPPUNIT_TEST( testOverwrite );
 	CPPUNIT_TEST( testMany );
+	CPPUNIT_TEST( testCollision );
 	
 	CPPUNIT_TEST_SUITE_END();
 	
@@ -20,10 +23,15 @@ private:
   CharacterMap* map;
 
   void assertValue(char key, long expectedValue) {
+  	std::ostringstream os;
+		os << "Value for '" << key << "' should be " << expectedValue;
+		std::string message(os.str());
+
   	long result;
-  	CPPUNIT_ASSERT(map->contains(key));
-		CPPUNIT_ASSERT(map->get(key, result));
-		CPPUNIT_ASSERT_EQUAL(expectedValue, result);
+
+  	CPPUNIT_ASSERT_MESSAGE(message, map->contains(key));
+	CPPUNIT_ASSERT_MESSAGE(message, map->get(key, result));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(message, expectedValue, result);
   }
 
 public:
@@ -37,32 +45,38 @@ public:
 	
 	void testBasic() {
 		CPPUNIT_ASSERT(!map->contains('a'));
-		map->put('a', 100);
-		CPPUNIT_ASSERT(map->contains('a'));
-
-		long result;
-		CPPUNIT_ASSERT(map->get('a', result));
-		CPPUNIT_ASSERT_EQUAL(100L, result);
+		CPPUNIT_ASSERT(map->put('a', 100));
+		assertValue('a', 100);
 	}
 
 	void testOverwrite() {
-		map->put('a', 100);
+		CPPUNIT_ASSERT(map->put('a', 100));
 		assertValue('a', 100);
 
-		map->put('a', 200);
+		CPPUNIT_ASSERT(map->put('a', 200));
 		assertValue('a', 200);
 	}
 
 	void testMany() {
-		map->put('a', 100);
-		map->put('b', 200);
-		map->put('c', 300);
-		map->put('d', 400);
+		CPPUNIT_ASSERT(map->put('a', 100));
+		CPPUNIT_ASSERT(map->put('b', 200));
+		CPPUNIT_ASSERT(map->put('c', 300));
+		CPPUNIT_ASSERT(map->put('d', 400));
 
 		assertValue('a', 100);
 		assertValue('b', 200);
 		assertValue('c', 300);
 		assertValue('d', 400);
+	}
+
+	void testCollision() {
+		char sameHash = 'a' + 10 * m_percentrestrict;
+
+		CPPUNIT_ASSERT(map->put('a', 100));
+		CPPUNIT_ASSERT(map->put(sameHash, 200));
+
+		assertValue('a', 100);
+		assertValue(sameHash, 200);
 	}
 };
 
