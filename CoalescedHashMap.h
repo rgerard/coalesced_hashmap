@@ -3,8 +3,8 @@
 #define HASHMAP_H
 
 struct Bucket {
+       bool used;
        char key;
-       bool isPointer;
        long valueOrPointer;
 };
 

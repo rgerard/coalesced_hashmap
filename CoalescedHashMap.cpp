@@ -5,6 +5,9 @@
 CharacterMap::CharacterMap(int size) {
 	bucket = new Bucket[size];
 	m_size = size;
+	for (int i = 0; i < size; i++) {
+		bucket[i].used = false;
+	}
 }
 
 CharacterMap::~CharacterMap() {
@@ -18,12 +21,9 @@ bool CharacterMap::put(char key, long value) {
 		return false;	
 	}
 
-	// Create the new bucket and add it to the hashmap
-	Bucket new_bucket;
-	new_bucket.key = key;
-	new_bucket.valueOrPointer = value;
-	new_bucket.isPointer = false;
-	bucket[index] = new_bucket;
+	bucket[index].key = key;
+	bucket[index].valueOrPointer = value;
+	bucket[index].used = true;
 
 	return true;
 }
