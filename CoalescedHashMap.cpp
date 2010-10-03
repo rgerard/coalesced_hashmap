@@ -1,24 +1,28 @@
 // This is the main DLL file.
 
 #include "CoalescedHashMap.h"
-#include <algorithm>
 #include <sstream>
 
-
 CharacterMap::CharacterMap(int size) {
-	init(size);
+	init(size, NULL);
 }
 
+CharacterMap::CharacterMap(int size, FILE *filepointer) {
+	init(size, filepointer);
+}
 
-void CharacterMap::init(int size) {
+void CharacterMap::init(int size, FILE *filepointer) {
 	m_bucket = new Bucket[size];
 
+	m_filepointer = filepointer;
 	m_actualsize = size;
 	m_restrictedsize = (size * m_percentrestrict);
 
-	for (int i = 0; i < size; i++) {
-		m_bucket[i].used = false;
-		m_bucket[i].indexOfNext = -1;
+	if(m_filepointer == NULL || !readfile()) {
+		for (int i = 0; i < size; i++) {
+			m_bucket[i].used = false;
+			m_bucket[i].indexOfNext = -1;
+		}
 	}
 }
 
@@ -26,7 +30,7 @@ CharacterMap::~CharacterMap() {
 	delete [] m_bucket;
 }
  
-void CharacterMap::put(char key, long value) {
+bool CharacterMap::put(char key, long value) {
 	int index = hash(key);
 	
 	// If the location is null, insert a new bucket to hashmap
@@ -34,20 +38,20 @@ void CharacterMap::put(char key, long value) {
 		m_bucket[index].key = key;
 		m_bucket[index].value = value;
 		m_bucket[index].used = true;
-		return;
+		return true;
 	}
 
 	// Find the right location in the cellar for this new value, starting at (tablesize - 1)
 	int cursor = m_actualsize - 1;
 	while ( cursor >= 0 && m_bucket[cursor].used && m_bucket[cursor].key != key) {
-		--cursor;
-    }
+      --cursor;
+     }
 
+	// Table is full, so return failure
 	if ( cursor == -1 ) {
 		// Table is full: re-size and try again.
 		resize(std::max(m_actualsize * 2, 256));
-		put(key, value);
-		return;
+		return put(key, value);
     }
 
 	// Insert new bucket at the cursor location
@@ -57,10 +61,12 @@ void CharacterMap::put(char key, long value) {
 
 	// Point the colliding node to this new node
 	while ( m_bucket[index].indexOfNext != -1 ) {
-		index = m_bucket[index].indexOfNext;
+      index = m_bucket[index].indexOfNext;
     }
 
     m_bucket[index].indexOfNext = cursor;
+
+	return true;
 }
 
 bool CharacterMap::get(char key, long &result) {
@@ -71,7 +77,7 @@ bool CharacterMap::get(char key, long &result) {
 	}
 
 	while (index != -1 && m_bucket[index].key != key) {
-		index = m_bucket[index].indexOfNext;
+	  index = m_bucket[index].indexOfNext;
 	}
 
 	if (index == -1) {
@@ -87,8 +93,41 @@ bool CharacterMap::contains(char key) {
 	return get(key, ignoredResult);
 }
 
+bool CharacterMap::flush(FILE *filepointer) {
+	// Write out the number of elements to be written, following this
+	int written = fwrite(&m_actualsize, sizeof(int), 1, filepointer);
+	if(written != 1) {
+		return false;
+	}
+
+	written = fwrite(m_bucket, sizeof(Bucket), m_actualsize, filepointer);
+	if(written == m_actualsize) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool CharacterMap::readfile() {
+	// Read in the count of buckets, and the data structure from the file
+	int count = 0;
+	int readCount = fread(&count, sizeof(int), 1, m_filepointer);
+
+	if(readCount == 0) {
+		return false;
+	}
+
+	int readObject = fread(m_bucket, sizeof(Bucket), count, m_filepointer);
+
+	if(readObject == count) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 int CharacterMap::hash(char key) {
-	return key % m_restrictedsize;
+	return abs(key) % m_restrictedsize;
 }
 
 std::string CharacterMap::toDebugString() {
@@ -108,11 +147,12 @@ std::string CharacterMap::toDebugString() {
 	return message;
 }
 
+
 void CharacterMap::resize(int newSize) {
 	int oldSize = m_actualsize;
 	Bucket *oldItems = m_bucket;
 
-	init(newSize);
+	init(newSize, m_filepointer);
 
 	for (int i = 0; i < oldSize; i++) {
 		Bucket item = oldItems[i];

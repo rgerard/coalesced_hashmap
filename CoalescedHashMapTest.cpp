@@ -15,6 +15,7 @@ class CoalescedHashMapTest : public CppUnit::TestFixture  {
 	CPPUNIT_TEST( testBasic );
 	CPPUNIT_TEST( testOverwrite );
 	CPPUNIT_TEST( testMany );
+	CPPUNIT_TEST( testFlush );
 	CPPUNIT_TEST( testCollision );
 	CPPUNIT_TEST( testNullChar );
 	CPPUNIT_TEST( testOverflow );
@@ -73,6 +74,25 @@ public:
 		assertValue('b', 200);
 		assertValue('c', 300);
 		assertValue('d', 400);
+	}
+
+	void testFlush() {
+		testMany();
+		
+		FILE *fp = fopen("C:\\test.bin", "wb");
+		CPPUNIT_ASSERT(map->flush(fp));
+		fclose(fp);
+
+		fp = fopen("C:\\test.bin", "r+b");
+		delete map;
+		map = new CharacterMap(10, fp);
+
+		assertValue('a', 100);
+		assertValue('b', 200);
+		assertValue('c', 300);
+		assertValue('d', 400);
+
+		fclose(fp);
 	}
 
 	void testCollision() {
