@@ -29,12 +29,12 @@ private:
 			os << "Value for '" << key << "' should be " << expectedValue;
 			std::string message(os.str());
 
-  	long result;
+		long result;
 
-  	CPPUNIT_ASSERT_MESSAGE(message, map->contains(key));
-	CPPUNIT_ASSERT_MESSAGE(message, map->get(key, result));
-	CPPUNIT_ASSERT_EQUAL_MESSAGE(message, expectedValue, result);
-  }
+		CPPUNIT_ASSERT_MESSAGE(message, map->contains(key));
+		CPPUNIT_ASSERT_MESSAGE(message, map->get(key, result));
+		CPPUNIT_ASSERT_EQUAL_MESSAGE(message, expectedValue, result);
+  	}
 
 public:
 	void setUp() {
@@ -42,7 +42,7 @@ public:
 	}
 	
 	void tearDown() {
-	  delete map;
+		delete map;
 	}
 	
 	void testBasic() {
