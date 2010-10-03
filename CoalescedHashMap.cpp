@@ -4,25 +4,35 @@
 #include <sstream>
 
 CharacterMap::CharacterMap(int size) {
-	init(size, NULL);
+	init(size);
+
+	// Initialize the empty bucket
+	for (int i = 0; i < size; i++) {
+		m_bucket[i].used = false;
+		m_bucket[i].indexOfNext = -1;
+	}
 }
 
-CharacterMap::CharacterMap(int size, FILE *filepointer) {
-	init(size, filepointer);
+CharacterMap::CharacterMap(FILE *filepointer) {
+	initFromFile(filepointer);
 }
 
-void CharacterMap::init(int size, FILE *filepointer) {
+void CharacterMap::init(int size) {
 	m_bucket = new Bucket[size];
-
-	m_filepointer = filepointer;
 	m_actualsize = size;
 	m_restrictedsize = (size * m_percentrestrict);
+}
 
-	if(m_filepointer == NULL || !readfile()) {
-		for (int i = 0; i < size; i++) {
-			m_bucket[i].used = false;
-			m_bucket[i].indexOfNext = -1;
-		}
+void CharacterMap::initFromFile(FILE *filepointer) {
+	//Read from the file, and initialize the size of the bucket
+	m_filepointer = filepointer;
+	int countFromFile = readfilecount();
+	init(countFromFile);
+
+	if(countFromFile == 0) {
+		countFromFile = 10;
+	} else {
+		 readfile();
 	}
 }
 
@@ -108,18 +118,23 @@ bool CharacterMap::flush(FILE *filepointer) {
 	}
 }
 
-bool CharacterMap::readfile() {
+int CharacterMap::readfilecount() {
 	// Read in the count of buckets, and the data structure from the file
 	int count = 0;
 	int readCount = fread(&count, sizeof(int), 1, m_filepointer);
 
-	if(readCount == 0) {
+	return count;
+}
+
+bool CharacterMap::readfile() {
+	if(m_filepointer == NULL) {
 		return false;
 	}
 
-	int readObject = fread(m_bucket, sizeof(Bucket), count, m_filepointer);
+	// Read in the count of buckets, and the data structure from the file
+	int objectsRead = fread(m_bucket, sizeof(Bucket), m_actualsize, m_filepointer);
 
-	if(readObject == count) {
+	if(m_actualsize == objectsRead) {
 		return true;
 	} else {
 		return false;
@@ -152,7 +167,12 @@ void CharacterMap::resize(int newSize) {
 	int oldSize = m_actualsize;
 	Bucket *oldItems = m_bucket;
 
-	init(newSize, m_filepointer);
+	init(newSize);
+	// Initialize the empty bucket
+	for (int i = 0; i < newSize; i++) {
+		m_bucket[i].used = false;
+		m_bucket[i].indexOfNext = -1;
+	}
 
 	for (int i = 0; i < oldSize; i++) {
 		Bucket item = oldItems[i];

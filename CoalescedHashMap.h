@@ -17,7 +17,8 @@ struct Bucket {
 class CharacterMap {
 private:
 	   int hash(char key);
-	   void init(int size, FILE *filepointer);
+	   void init(int size);
+	   void initFromFile(FILE *filepointer);
 	   void resize(int newSize);
 
 	   Bucket *m_bucket;
@@ -26,7 +27,7 @@ private:
 	   FILE *m_filepointer;
 public:
 	   CharacterMap(int size);
-       CharacterMap(int size, FILE *filepointer);
+       CharacterMap(FILE *filepointer);
        ~CharacterMap();
 
        bool contains(char key);
@@ -38,6 +39,7 @@ public:
 
 	   // File I/O
 	   bool readfile();
+	   int readfilecount();
 	   bool flush(FILE *filepointer);
 };
 
