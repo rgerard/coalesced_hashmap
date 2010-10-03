@@ -70,13 +70,16 @@ public:
 	}
 
 	void testCollision() {
-		char sameHash = 'a' + 10 * m_percentrestrict;
+		int increment = 10 * m_percentrestrict;
 
-		CPPUNIT_ASSERT(map->put('a', 100));
-		CPPUNIT_ASSERT(map->put(sameHash, 200));
+		for (int i = 0; i < 5; i++) {
+			CPPUNIT_ASSERT(map->put('a' + increment * i, i * 100));
+		}
 
-		assertValue('a', 100);
-		assertValue(sameHash, 200);
+		for (int i = 0; i < 5; i++) {
+			assertValue('a' + increment * i, i * 100);
+		}
+
 	}
 };
 
