@@ -18,8 +18,11 @@ class CharacterMap {
 private:
 	   int hash(char key);
 	   void init(int size);
-	   void initFromFile(FILE *filepointer);
 	   void resize(int newSize);
+	   
+	   // File I/O
+	   bool readfile();
+	   int readfilecount();
 
 	   Bucket *m_bucket;
 	   int m_actualsize;
@@ -36,10 +39,6 @@ public:
        bool get(char key, long &result);
        std::string toDebugString();
        int getSize();
-
-	   // File I/O
-	   bool readfile();
-	   int readfilecount();
 	   bool flush(FILE *filepointer);
 };
 

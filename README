@@ -1,0 +1,65 @@
+Welcome to the CoalescedHashTable!
+Written by: Ryan Gerard and Robby Walker
+
+
+INTRODUCTION
+
+The CoalescedHashmap is an object that uses a coalesced hashing strategy to deal with hashing collisions, and persists that hashmap to disk.  
+Coalesced hashing is a strategy of collision resolution in a hash table that forms a hybrid of separate chaining and open addressing.
+
+This hashmap implemention allows you to map single characters to long values.  It also will automatically resize the table (doubling it in size), 
+in case you add more objects than your table can hold.
+
+Coalesced chaining avoids the effects of primary and secondary clustering, and as a result can take advantage of the efficient 
+search algorithm for separate chaining. If the chains are short, this strategy is very efficient and can be highly condensed, memory-wise.
+
+Read more about it here:
+http://en.wikipedia.org/wiki/Coalesced_hashing
+
+
+
+SETUP
+
+The CoalescedHashMap is a C++ library.  The included makefile should be able to build the project for you.  Alternatively, a Release build
+of the lib is included, so you should be able to link to the .lib file and start using it right away.
+
+If you'd like to run the Unit tests, please setup CppUnit, and build the TestRunner.cpp file.
+
+
+
+BASIC USAGE
+
+To create the hashmap, pass in the initial size of the hashmap you want to create into the constructor:
+	map = new CharacterMap(100);
+	
+To add values to the hashmap, map a single character to a long value:
+	map->put('a', 100);
+	
+To check whether a hashmap contains a key already, use the 'contains' function:
+	if(map->contains('a'))
+	
+To get a value from the hashmap, pass in the key, and a value to fill with the hashmap result:
+	long result;
+	map->get('a', result);
+	
+To get the current size of your table, call the function:
+	map->getSize()
+
+
+To flush the hashmap to disk, call flush, and pass in a file pointer to the file to write to:
+	FILE *fp = fopen("C:\\test.bin", "wb");
+	map->flush(fp);
+	fclose(fp);
+
+To create a map from a hashmap previously flushed to disk, call the constuctor and pass in a file pointer to the file containing the hashmap:
+	fp = fopen("C:\\test.bin", "r+b");
+	map = new CharacterMap(fp);
+	fclose(fp);
+	
+	
+
+EXCEPTIONS
+	100: Thrown when a hashmap memory allocation fails
+	200: Thrown when a read from disk fails (called from inside the CharacterMap constructor with a file pointer)	
+	300: Thrown when a write to disk fails (called from inside the flush() call)
+	400: Thrown when the object can't read the file object count from disk (called from inside the CharacterMap constructor with a file pointer)

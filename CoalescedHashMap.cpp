@@ -2,6 +2,7 @@
 
 #include "CoalescedHashMap.h"
 #include <sstream>
+#include <exception>
 
 CharacterMap::CharacterMap(int size) {
 	init(size);
@@ -14,26 +15,29 @@ CharacterMap::CharacterMap(int size) {
 }
 
 CharacterMap::CharacterMap(FILE *filepointer) {
-	initFromFile(filepointer);
+	//Read the size of the bucket from the file
+	m_filepointer = filepointer;
+	int countFromFile = readfilecount();
+
+	//Initialize the bucket, and other global properties
+	init(countFromFile);
+
+	//Only try to read from the file if a valid value is returned
+	if(countFromFile > 0) {
+		 readfile();
+	}
 }
 
 void CharacterMap::init(int size) {
-	m_bucket = new Bucket[size];
+	//If the bucket memory allocation fails, throw error 100, which should indicate to the user of this library that an init error happened
+	try {
+		m_bucket = new Bucket[size];
+	} catch (std::bad_alloc& e) {
+		throw 100;
+	}
+	
 	m_actualsize = size;
 	m_restrictedsize = (size * m_percentrestrict);
-}
-
-void CharacterMap::initFromFile(FILE *filepointer) {
-	//Read from the file, and initialize the size of the bucket
-	m_filepointer = filepointer;
-	int countFromFile = readfilecount();
-	init(countFromFile);
-
-	if(countFromFile == 0) {
-		countFromFile = 10;
-	} else {
-		 readfile();
-	}
 }
 
 CharacterMap::~CharacterMap() {
@@ -54,8 +58,8 @@ bool CharacterMap::put(char key, long value) {
 	// Find the right location in the cellar for this new value, starting at (tablesize - 1)
 	int cursor = m_actualsize - 1;
 	while ( cursor >= 0 && m_bucket[cursor].used && m_bucket[cursor].key != key) {
-      --cursor;
-     }
+		--cursor;
+	}
 
 	// Table is full, so return failure
 	if ( cursor == -1 ) {
@@ -71,11 +75,10 @@ bool CharacterMap::put(char key, long value) {
 
 	// Point the colliding node to this new node
 	while ( m_bucket[index].indexOfNext != -1 ) {
-      index = m_bucket[index].indexOfNext;
+		index = m_bucket[index].indexOfNext;
     }
 
     m_bucket[index].indexOfNext = cursor;
-
 	return true;
 }
 
@@ -110,7 +113,13 @@ bool CharacterMap::flush(FILE *filepointer) {
 		return false;
 	}
 
-	written = fwrite(m_bucket, sizeof(Bucket), m_actualsize, filepointer);
+	//If the write file fails, throw error 300 to indicate a write failure
+	try {
+		written = fwrite(m_bucket, sizeof(Bucket), m_actualsize, filepointer);
+	} catch(...) {
+		throw 300;
+	}
+
 	if(written == m_actualsize) {
 		return true;
 	} else {
@@ -121,8 +130,14 @@ bool CharacterMap::flush(FILE *filepointer) {
 int CharacterMap::readfilecount() {
 	// Read in the count of buckets, and the data structure from the file
 	int count = 0;
-	int readCount = fread(&count, sizeof(int), 1, m_filepointer);
-
+	
+	//If the read file fails, throw error 400 to indicate a read file count failure
+	try {
+		fread(&count, sizeof(int), 1, m_filepointer);
+	} catch(...) {
+		throw 400;
+	}
+	
 	return count;
 }
 
@@ -132,7 +147,14 @@ bool CharacterMap::readfile() {
 	}
 
 	// Read in the count of buckets, and the data structure from the file
-	int objectsRead = fread(m_bucket, sizeof(Bucket), m_actualsize, m_filepointer);
+	int objectsRead = -1;
+	
+	//If the read file fails, throw error 200 to indicate a read failure
+	try {
+		objectsRead = fread(m_bucket, sizeof(Bucket), m_actualsize, m_filepointer);
+	} catch(...) {
+		throw 200;
+	}
 
 	if(m_actualsize == objectsRead) {
 		return true;
@@ -168,6 +190,7 @@ void CharacterMap::resize(int newSize) {
 	Bucket *oldItems = m_bucket;
 
 	init(newSize);
+
 	// Initialize the empty bucket
 	for (int i = 0; i < newSize; i++) {
 		m_bucket[i].used = false;
